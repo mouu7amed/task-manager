@@ -32,7 +32,7 @@ export const Dashboard = () => {
         .then(() => setSnackBarOpen(true))
         .catch((err) => setError(err.message));
     } catch {
-      console.log("Error Uploading your Photo!");
+      console.log(error);
     }
 
     setPhoto(null);
