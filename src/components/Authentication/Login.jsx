@@ -13,7 +13,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -31,19 +31,23 @@ const boxVariants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, type: "spring", stiffness: 120 },
+    transition: { duration: 0.3, type: "spring" },
   },
   tap: {
     scale: 0.9,
   },
 };
 
+const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
+  return <Alert ref={ref} elevation={2} {...props} />;
+});
+
 export const Login = ({ title }) => {
-  const emailRef = useRef();
-  const passwordRef = useRef();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [isError, setIsError] = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [remeberMe, setRemeberMe] = useState(false);
@@ -59,23 +63,21 @@ export const Login = ({ title }) => {
     }
   }, [title, currentUser, navigate]);
 
-  const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
-    return <Alert ref={ref} elevation={2} {...props} />;
-  });
-
   const loginHandler = async (e) => {
     e.preventDefault();
 
-    const email = emailRef.current.value;
-    const password = passwordRef.current.value;
-
     try {
       setLoading(true);
-      setIsError("");
-      await login(email, password).catch((error) => setIsError(error.message));
-      navigate("/dashboard", { replace: true });
+      setError("");
+      await login(email, password)
+        .then(() => {
+          setError("");
+          setSnackBarOpen(true);
+          navigate("/dashboard", { replace: true });
+        })
+        .catch(() => setError("incorrect email or password!"));
     } catch {
-      setIsError("incorrect email or password!");
+      console.log("incorrect email or password!");
     }
     setLoading(false);
   };
@@ -109,9 +111,10 @@ export const Login = ({ title }) => {
             fullWidth
             required
             disabled={loading}
-            error={!!isError}
-            helperText={!!isError && "Incorrect Email Or Password"}
-            inputRef={emailRef}
+            error={!!error}
+            helperText={!!error && "Incorrect Email Or Password"}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
             margin="normal"
@@ -120,8 +123,8 @@ export const Login = ({ title }) => {
             fullWidth
             required
             disabled={loading}
-            error={!!isError}
-            helperText={!!isError && "Incorrect Email Or Password"}
+            error={!!error}
+            helperText={!!error && "Incorrect Email Or Password"}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -131,7 +134,8 @@ export const Login = ({ title }) => {
                 </InputAdornment>
               ),
             }}
-            inputRef={passwordRef}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <FormControlLabel
             control={
@@ -196,7 +200,7 @@ export const Login = ({ title }) => {
           }}
         >
           <SnackbarAlert
-            severity={!!isError ? "error" : "info"}
+            severity={!!error ? "error" : "info"}
             onClose={(e, reason) => {
               if (reason === "clickaway") {
                 return;
@@ -204,7 +208,7 @@ export const Login = ({ title }) => {
               setSnackBarOpen(false);
             }}
           >
-            {!!isError ? isError : "Registered successfully!"}
+            {!!error ? error : "Redirecting ..."}
           </SnackbarAlert>
         </Snackbar>
       </Box>

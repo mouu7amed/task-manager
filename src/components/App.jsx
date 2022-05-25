@@ -7,6 +7,8 @@ import { AuthProvider } from "../utilities/AuthProvider";
 import { RequireAuth } from "../utilities/RequireAuth";
 import { ForgotPassword } from "./Authentication/ForgotPassword";
 import { NoMatch } from "./NoMatch";
+import { Profile } from "./Dashboard/Profile";
+import { Settings } from "./Dashboard/Settings/Settings";
 
 function App() {
   return (
@@ -26,7 +28,10 @@ function App() {
               <Dashboard title="Dashboard" />
             </RequireAuth>
           }
-        />
+        >
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
         <Route path="*" element={<NoMatch title="Page Not Found" />} />
       </Routes>
     </AuthProvider>

@@ -23,7 +23,7 @@ const boxVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, type: "spring", stiffness: 120 },
+    transition: { duration: 0.3, type: "spring" },
   },
   tap: {
     scale: 0.9,

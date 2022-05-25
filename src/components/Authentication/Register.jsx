@@ -14,7 +14,7 @@ import {
   Alert,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import PeopleIcon from "@mui/icons-material/People";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -30,26 +30,33 @@ const boxVariants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.3, type: "spring", stiffness: 120 },
+    transition: { duration: 0.3, type: "spring" },
   },
   tap: {
     scale: 0.9,
   },
 };
 
+const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
+  return <Alert ref={ref} elevation={2} {...props} />;
+});
+
 export const Register = ({ title }) => {
-  const firstNameRef = useRef();
-  const lastNameRef = useRef();
-  const emailRef = useRef();
-  const passwordRef = useRef();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [isError, setIsError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [validationError, setValidationError] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
 
   const { currentUser, register } = useAuth();
   const navigate = useNavigate();
@@ -61,49 +68,69 @@ export const Register = ({ title }) => {
     }
   }, [title, currentUser, navigate]);
 
-  const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
-    return <Alert ref={ref} elevation={2} {...props} />;
-  });
-
   const registerHandler = async (e) => {
     e.preventDefault();
 
-    const firstName =
-      firstNameRef.current.value.charAt(0).toUpperCase() +
-      firstNameRef.current.value.slice(1);
-    const lastName =
-      lastNameRef.current.value.charAt(0).toUpperCase() +
-      lastNameRef.current.value.slice(1);
+    // Validations
+    if (!firstName.match(/^[a-zA-Z]+$/)) {
+      setValidationError({
+        firstName: "Enter a valid name",
+        lastName: "",
+        email: "",
+        password: "",
+      });
+      setFirstName("");
+      return;
+    }
 
-    const email = emailRef.current.value;
-    const password = passwordRef.current.value;
+    if (!lastName.match(/^[a-zA-Z]+$/)) {
+      setValidationError({
+        firstName: "",
+        lastName: "Enter a valid name",
+        email: "",
+        password: "",
+      });
+      setLastName("");
+      return;
+    }
 
-    // password verification
     if (password.length < 6) {
-      setPasswordError("Password must be at least 6 digits!");
+      setValidationError({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "Password must be at least 6 digits!",
+      });
       return;
     }
 
     // create account
     try {
       setLoading(true);
-      setIsError("");
-      setEmailError("");
-      setPasswordError("");
+      setValidationError({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+      });
 
       await register(email, password)
-        .then((res) => {
+        .then(async (res) => {
           if (res.user) {
-            const fullName = `${firstName} ${lastName}`;
-            res.user.updateProfile({ displayName: fullName });
+            const fullName = `${
+              firstName.charAt(0).toUpperCase() + firstName.slice(1)
+            } ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`;
+            await res.user.updateProfile({ displayName: fullName });
           }
-
           setSnackBarOpen(true);
         })
         .catch((error) => {
-          setEmailError(
-            "The email address is already in use by another account."
-          );
+          setValidationError({
+            firstName: "",
+            lastName: "",
+            email: "The email address is already in use by another account.",
+            password: "",
+          });
         });
     } catch {
       console.log("Error Creating your Account!");
@@ -142,7 +169,12 @@ export const Register = ({ title }) => {
               disabled={loading}
               type="text"
               required
-              inputRef={firstNameRef}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              error={!!validationError.firstName}
+              helperText={
+                !!validationError.firstName && validationError.firstName
+              }
             />
 
             <TextField
@@ -151,7 +183,12 @@ export const Register = ({ title }) => {
               label="Last Name"
               type="text"
               required
-              inputRef={lastNameRef}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              error={!!validationError.lastName}
+              helperText={
+                !!validationError.lastName && validationError.lastName
+              }
             />
           </Stack>
           <TextField
@@ -160,10 +197,11 @@ export const Register = ({ title }) => {
             disabled={loading}
             label="Email"
             type="email"
-            error={!!emailError}
-            helperText={!!emailError && emailError}
+            error={!!validationError.email}
+            helperText={!!validationError.email && validationError.email}
             required
-            inputRef={emailRef}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
             fullWidth
@@ -171,10 +209,10 @@ export const Register = ({ title }) => {
             disabled={loading}
             label="Password"
             type={showPassword ? "text" : "password"}
-            error={!!passwordError}
+            error={!!validationError.password}
             helperText={
-              !!passwordError
-                ? passwordError
+              !!validationError.password
+                ? validationError.password
                 : "Use 6 or more characters using letters, numbers, or symbols"
             }
             required
@@ -187,7 +225,8 @@ export const Register = ({ title }) => {
                 </InputAdornment>
               ),
             }}
-            inputRef={passwordRef}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <FormControlLabel
@@ -231,30 +270,27 @@ export const Register = ({ title }) => {
             Mohammed Azzab
           </Link>
         </Typography>
-
-        <Snackbar
-          open={snackBarOpen}
-          autoHideDuration={2000}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
+      </Box>
+      <Snackbar
+        open={snackBarOpen}
+        autoHideDuration={2000}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+      >
+        <SnackbarAlert
+          severity={"info"}
+          onClose={(e, reason) => {
+            if (reason === "clickaway") {
+              return;
+            }
+            setSnackBarOpen(false);
           }}
         >
-          <SnackbarAlert
-            severity={!isError && !emailError ? "info" : "error"}
-            onClose={(e, reason) => {
-              if (reason === "clickaway") {
-                return;
-              }
-              setSnackBarOpen(false);
-            }}
-          >
-            {!emailError
-              ? "Registered successfully!"
-              : "Error Creating your Account!"}
-          </SnackbarAlert>
-        </Snackbar>
-      </Box>
+          {!validationError.email && "Registered successfully!"}
+        </SnackbarAlert>
+      </Snackbar>
     </Container>
   );
 };
