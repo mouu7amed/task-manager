@@ -103,7 +103,7 @@ export const Settings = () => {
                 value="1"
                 sx={{ padding: { md: "0 0 0 24px", xs: "24px 0 0 0" } }}
               >
-                <ProfileSettings />
+                <ProfileSettings avatar={avatar} />
               </TabPanel>
 
               <TabPanel

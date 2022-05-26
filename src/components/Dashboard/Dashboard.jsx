@@ -8,6 +8,7 @@ export const Dashboard = () => {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [avatar, setAvatar] = useState("");
+
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -26,7 +27,6 @@ export const Dashboard = () => {
     <>
       <Navbar userName={userName} avatar={avatar} />
       <Container>
-        {/* Profile */}
         <Outlet context={{ userName, userEmail, avatar }} />
       </Container>
     </>

@@ -9,33 +9,70 @@ import {
   AccordionSummary,
   Alert,
   Snackbar,
+  Avatar,
+  Box,
+  Button,
+  CircularProgress,
+  Fade,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React, { forwardRef, useState } from "react";
 import { useAuth } from "../../../utilities/AuthProvider";
 import { updateProfile } from "firebase/auth";
 import { LoadingButton } from "@mui/lab";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../../utilities/firebase";
+import EditIcon from "@mui/icons-material/Edit";
+import DoneIcon from "@mui/icons-material/Done";
 
 const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
   return <Alert ref={ref} elevation={2} {...props} />;
 });
 
-export const ProfileSettings = () => {
+export const ProfileSettings = ({ avatar }) => {
+  const [photo, setPhoto] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [bioText, setBioText] = useState("");
   const [expanded, setExpanded] = useState("NamePanel");
-  const [loading, setLoading] = useState(false);
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [error, setError] = useState("");
   const [validationError, setValidationError] = useState({
     firstName: "",
     lastName: "",
+    bio: "",
+  });
+  const [loading, setLoading] = useState({
+    info: false,
+    photo: false,
+    bio: false,
   });
 
-  const { currentUser } = useAuth();
+  const { currentUser, changeAvatar } = useAuth();
 
   const handleExpandtion = (isExpanded, panel) => {
     setExpanded(isExpanded ? panel : false);
+  };
+
+  const changePhotoHandler = async () => {
+    try {
+      setError("");
+      setLoading({
+        ...loading,
+        photo: true,
+      });
+      await changeAvatar(photo)
+        .then(() => setSnackBarOpen(true))
+        .catch((err) => setError(err.message));
+    } catch {
+      console.log(error);
+    }
+
+    setPhoto(null);
+    setLoading({
+      ...loading,
+      photo: false,
+    });
   };
 
   const changeNameHandler = async () => {
@@ -43,10 +80,15 @@ export const ProfileSettings = () => {
       firstName.charAt(0).toUpperCase() + firstName.slice(1)
     } ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`;
 
+    if (!firstName || !lastName) {
+      return;
+    }
+
     if (!firstName.match(/^[a-zA-Z]+$/)) {
       setValidationError({
         firstName: "Please enter a valid first name",
         lastName: "",
+        bio: "",
       });
       setFirstName("");
       return;
@@ -56,13 +98,17 @@ export const ProfileSettings = () => {
       setValidationError({
         firstName: "",
         lastName: "Please enter a valid last name",
+        bio: "",
       });
       setLastName("");
       return;
     }
 
     try {
-      setLoading(true);
+      setLoading({
+        ...loading,
+        info: true,
+      });
       setError("");
       setValidationError("");
 
@@ -75,10 +121,40 @@ export const ProfileSettings = () => {
 
     setFirstName("");
     setLastName("");
-    setLoading(false);
+    setLoading({
+      ...loading,
+      info: false,
+    });
   };
 
-  const changeBioHandler = () => {};
+  const changeBioHandler = async () => {
+    const profileCollectionRef = doc(db, "profile", "YOSHhP6UGR4IxAAxYw0l");
+
+    if (!bioText) {
+      return;
+    }
+
+    try {
+      setValidationError("");
+      setLoading({
+        ...loading,
+        bio: true,
+      });
+      await updateDoc(profileCollectionRef, {
+        bio: bioText,
+      })
+        .then(() => setSnackBarOpen(true))
+        .catch((err) => setError(err.messgae));
+    } catch {
+      console.log("Error changing your bio!");
+    }
+
+    setBioText("");
+    setLoading({
+      ...loading,
+      bio: false,
+    });
+  };
 
   return (
     <>
@@ -96,34 +172,100 @@ export const ProfileSettings = () => {
           }
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography sx={{ fontWeight: 600 }}>Name</Typography>
+            <Typography sx={{ fontWeight: 600 }}>Info</Typography>
           </AccordionSummary>
           <AccordionDetails sx={{ padding: 1 }}>
-            <Stack direction={"row"} spacing={2} mb={1}>
-              <TextField
-                label="First Name"
-                disabled={loading}
-                type="text"
-                required
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                error={!!validationError.firstName}
-                helperText={
-                  !!validationError.firstName && validationError.firstName
-                }
-              />
-              <TextField
-                disabled={loading}
-                label="Last Name"
-                type="text"
-                required
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                error={!!validationError.lastName}
-                helperText={
-                  !!validationError.lastName && validationError.lastName
-                }
-              />
+            <Stack
+              direction={{ md: "row", xs: "column-reverse" }}
+              spacing={4}
+              justifyContent="space-between"
+            >
+              <Box>
+                <Typography sx={{ fontWeight: 500 }}>Name</Typography>
+                <Stack direction={"row"} spacing={2} mb={1}>
+                  <TextField
+                    label="First Name"
+                    disabled={loading.info}
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    error={!!validationError.firstName}
+                    helperText={
+                      !!validationError.firstName && validationError.firstName
+                    }
+                  />
+                  <TextField
+                    disabled={loading.info}
+                    label="Last Name"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    error={!!validationError.lastName}
+                    helperText={
+                      !!validationError.lastName && validationError.lastName
+                    }
+                  />
+                </Stack>
+              </Box>
+              <Box sx={{ position: "relative" }}>
+                <Typography sx={{ fontWeight: 500 }}>
+                  Profile Picture
+                </Typography>
+                <Box sx={{ position: "relative" }}>
+                  <Avatar
+                    src={avatar}
+                    alt="avatar"
+                    sx={{ width: 200, height: 200 }}
+                  />
+                  <Fade
+                    in={loading.photo}
+                    sx={{
+                      position: "absolute",
+                      top: "40%",
+                      left: "40%",
+                    }}
+                  >
+                    <CircularProgress />
+                  </Fade>
+                </Box>
+                {!photo ? (
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    component="label"
+                    size="small"
+                    startIcon={<EditIcon />}
+                    sx={{
+                      position: "absolute",
+                      bottom: 10,
+                      textTransform: "initial",
+                    }}
+                  >
+                    Edit
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => setPhoto(e.target.files[0])}
+                    />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      bottom: 10,
+                      textTransform: "initial",
+                    }}
+                    disabled={loading.photo}
+                    startIcon={<DoneIcon />}
+                    onClick={changePhotoHandler}
+                  >
+                    Change
+                  </Button>
+                )}
+              </Box>
             </Stack>
           </AccordionDetails>
           <AccordionActions>
@@ -132,9 +274,9 @@ export const ProfileSettings = () => {
               color="success"
               disableElevation
               onClick={changeNameHandler}
-              loading={loading}
+              loading={loading.info}
             >
-              Update Name
+              Update Settings
             </LoadingButton>
           </AccordionActions>
         </Accordion>
@@ -151,8 +293,13 @@ export const ProfileSettings = () => {
             <TextField
               label="Bio"
               placeholder="Tell us a little bit about yourself"
+              disabled={loading.bio}
               type="text"
               sx={{ width: { sm: 458 } }}
+              value={bioText}
+              onChange={(e) => setBioText(e.target.value)}
+              error={!!validationError.bio}
+              helperText={!!validationError.bio && validationError.bio}
             />
           </AccordionDetails>
           <AccordionActions>
@@ -161,7 +308,7 @@ export const ProfileSettings = () => {
               color="success"
               disableElevation
               onClick={changeBioHandler}
-              loading={loading}
+              loading={loading.bio}
             >
               Save
             </LoadingButton>
@@ -186,8 +333,8 @@ export const ProfileSettings = () => {
             }}
           >
             {!error
-              ? "Name changed successfully!"
-              : "Error changing your name!"}
+              ? "Settings changed successfully!"
+              : "Error changing settings!"}
           </SnackbarAlert>
         </Snackbar>
       </Stack>
