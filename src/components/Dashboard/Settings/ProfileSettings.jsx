@@ -20,7 +20,7 @@ import React, { forwardRef, useState } from "react";
 import { useAuth } from "../../../utilities/AuthProvider";
 import { updateProfile } from "firebase/auth";
 import { LoadingButton } from "@mui/lab";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../utilities/firebase";
 import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
@@ -135,8 +135,8 @@ export const ProfileSettings = ({ avatar, userInfo }) => {
       }
 
       if (phoneValue) {
-        await setDoc(doc(db, "user", userInfo.id), {
-          ...doc,
+        const docId = userInfo.map((info) => info.id);
+        await updateDoc(doc(db, "user", docId[0]), {
           phone: phoneValue,
         })
           .then(() => setSnackBarOpen(true))
@@ -166,8 +166,9 @@ export const ProfileSettings = ({ avatar, userInfo }) => {
         ...loading,
         bio: true,
       });
-      await setDoc(setDoc(db, "user", userInfo.id), {
-        ...doc,
+
+      const docId = userInfo.map((info) => info.id);
+      await updateDoc(doc(db, "user", docId[0]), {
         bio: bioValue,
       })
         .then(() => setSnackBarOpen(true))
@@ -241,7 +242,7 @@ export const ProfileSettings = ({ avatar, userInfo }) => {
                   </Typography>
                   <Box>
                     <Typography fontWeight={400} display="inline-flex">
-                      {userInfo.phone}
+                      {userInfo.map((info) => info.phone)}
                     </Typography>
                     <Typography
                       fontWeight={400}

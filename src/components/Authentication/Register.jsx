@@ -21,6 +21,8 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAuth } from "../../utilities/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../../utilities/firebase";
 
 const boxVariants = {
   hidden: {
@@ -63,9 +65,11 @@ export const Register = ({ title }) => {
 
   useEffect(() => {
     document.title = title;
-    if (currentUser) {
-      navigate("/dashboard");
-    }
+    setTimeout(() => {
+      if (currentUser) {
+        navigate("/dashboard");
+      }
+    }, 3000);
   }, [title, currentUser, navigate]);
 
   const registerHandler = async (e) => {
@@ -121,7 +125,14 @@ export const Register = ({ title }) => {
               firstName.charAt(0).toUpperCase() + firstName.slice(1)
             } ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`;
             await res.user.updateProfile({ displayName: fullName });
+
+            await addDoc(collection(db, "user"), {
+              owner: res.user.uid,
+              bio: "No Bio",
+              phone: "No phone number",
+            });
           }
+
           setSnackBarOpen(true);
         })
         .catch((error) => {
@@ -131,7 +142,14 @@ export const Register = ({ title }) => {
             email: "The email address is already in use by another account.",
             password: "",
           });
+          console.log(error.message);
         });
+
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPassword("");
+      setAgreed(false);
     } catch {
       console.log("Error Creating your Account!");
     }

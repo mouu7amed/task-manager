@@ -1,17 +1,9 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  onSnapshot,
-  doc,
-  getDocs,
-  setDoc,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "../../utilities/firebase";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "../../utilities/AuthProvider";
+import { db } from "../../utilities/firebase";
 import { Navbar } from "./Navbar";
 
 export const Dashboard = () => {
@@ -19,12 +11,7 @@ export const Dashboard = () => {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [avatar, setAvatar] = useState("");
-  const [userInfo, setUserInfo] = useState({
-    id: "",
-    owner: "",
-    bio: "",
-    phone: "",
-  });
+  const [userInfo, setUserInfo] = useState([]);
 
   const { currentUser } = useAuth();
 
@@ -44,42 +31,34 @@ export const Dashboard = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const setUserCollectionInfo = async () => {
-      onSnapshot(collection(db, "user"), (snapshot) => {
-        snapshot.forEach((res) =>
-          setDoc(doc(db, "user", res.id), {
-            id: res.id,
+    const getUserInfo = async () => {
+      const q = query(collection(db, "user"), where("owner", "==", userUid));
+      onSnapshot(q, async (snapshot) => {
+        setUserInfo(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
             owner: userUid,
-            bio: "",
-            phone: "",
-          })
+            ...doc.data(),
+          }))
         );
       });
     };
 
-    const getUserCollectionInfo = async () => {
-      const userCollectionRef = collection(db, "user");
-      const q = query(userCollectionRef, where("owner", "==", userUid));
-      const querySnapshot = await getDocs(q);
-
-      querySnapshot.forEach((doc) =>
-        setUserInfo({
-          id: doc.id,
-          owner: userUid,
-          bio: doc.data().bio,
-          phone: doc.data().phone,
-        })
-      );
-    };
-
-    setUserCollectionInfo();
-    getUserCollectionInfo();
+    getUserInfo();
   }, [userUid]);
 
   return (
     <>
       <Navbar userName={userName} avatar={avatar} />
       <Box>
+        {userInfo.map((info, i) => (
+          <Box key={i} p={4}>
+            <Typography>Doc id -- {info.id}</Typography>
+            <Typography>Owner -- {info.owner}</Typography>
+            <Typography>Bio -- {info.bio}</Typography>
+            <Typography>Phone -- {info.phone}</Typography>
+          </Box>
+        ))}
         <Outlet context={{ userUid, userName, userEmail, avatar, userInfo }} />
       </Box>
     </>

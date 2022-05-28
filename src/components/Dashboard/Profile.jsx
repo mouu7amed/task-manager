@@ -163,7 +163,7 @@ export const Profile = () => {
                   color="text.secondary"
                   fontSize={{ sm: 15, xs: 13 }}
                 >
-                  {userInfo.bio}
+                  {userInfo.map((info) => info.bio)}
                 </Typography>
               </Stack>
             </Stack>
