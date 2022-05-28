@@ -19,7 +19,7 @@ import { AccountSettings } from "./AccountSettings";
 export const Settings = () => {
   const [tabValue, setTabValue] = useState("1");
 
-  const { userName, userEmail, avatar } = useOutletContext();
+  const { userName, userEmail, avatar, userInfo } = useOutletContext();
 
   return (
     <Container>
@@ -103,7 +103,7 @@ export const Settings = () => {
                 value="1"
                 sx={{ padding: { md: "0 0 0 24px", xs: "24px 0 0 0" } }}
               >
-                <ProfileSettings avatar={avatar} />
+                <ProfileSettings avatar={avatar} userInfo={userInfo} />
               </TabPanel>
 
               <TabPanel

@@ -48,6 +48,15 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const changeCover = async (file) => {
+    const storage = getStorage();
+    const fileRef = ref(storage, `covers/${currentUser.uid}/cover.png`);
+    const img = await uploadBytes(fileRef, file);
+    const imgUrl = await getDownloadURL(img.ref);
+
+    return imgUrl;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -57,6 +66,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         resetPassword,
         changeAvatar,
+        changeCover,
       }}
     >
       {!loading && children}
