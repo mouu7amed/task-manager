@@ -37,7 +37,6 @@ export const Dashboard = () => {
         setUserInfo(
           snapshot.docs.map((doc) => ({
             id: doc.id,
-            owner: userUid,
             ...doc.data(),
           }))
         );
