@@ -53,7 +53,6 @@ export const Dashboard = () => {
         {userInfo.map((info, i) => (
           <Box key={i} p={4}>
             <Typography>Doc id -- {info.id}</Typography>
-            <Typography>Owner -- {info.owner}</Typography>
             <Typography>Bio -- {info.bio}</Typography>
             <Typography>Phone -- {info.phone}</Typography>
           </Box>
