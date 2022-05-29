@@ -59,7 +59,7 @@ export const Login = ({ title }) => {
     document.title = title;
 
     if (currentUser) {
-      navigate("/dashboard");
+      navigate("/redirecting", { replace: true });
     }
   }, [title, currentUser, navigate]);
 
@@ -73,7 +73,7 @@ export const Login = ({ title }) => {
         .then(() => {
           setError("");
           setSnackBarOpen(true);
-          navigate("/dashboard", { replace: true });
+          navigate("/redirecting", { replace: true });
         })
         .catch(() => setError("incorrect email or password!"));
     } catch {

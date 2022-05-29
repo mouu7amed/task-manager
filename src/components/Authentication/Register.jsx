@@ -65,11 +65,9 @@ export const Register = ({ title }) => {
 
   useEffect(() => {
     document.title = title;
-    setTimeout(() => {
-      if (currentUser) {
-        navigate("/dashboard");
-      }
-    }, 3000);
+    if (currentUser) {
+      navigate("/redirecting", { replace: true });
+    }
   }, [title, currentUser, navigate]);
 
   const registerHandler = async (e) => {
@@ -126,8 +124,9 @@ export const Register = ({ title }) => {
             } ${lastName.charAt(0).toUpperCase() + lastName.slice(1)}`;
             await res.user.updateProfile({ displayName: fullName });
 
-            await addDoc(collection(db, "user"), {
+            await addDoc(collection(db, "users"), {
               owner: res.user.uid,
+              cover: "",
               bio: "No Bio",
               phone: "No phone number",
             });

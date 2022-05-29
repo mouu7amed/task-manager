@@ -10,11 +10,12 @@ import {
   Button,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { LoadingButton } from "@mui/lab";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import DoneIcon from "@mui/icons-material/Done";
-import { useAuth } from "../../utilities/AuthProvider";
+import { useAuth } from "../../../utilities/AuthProvider";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../../utilities/firebase";
 
 const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
   return <Alert ref={ref} elevation={2} {...props} />;
@@ -28,25 +29,23 @@ export const Profile = () => {
     cover: false,
   });
 
-  const { userUid, userName, avatar, userInfo } = useOutletContext();
+  const { userName, avatar, userInfo } = useOutletContext();
   const { changeCover } = useAuth();
-
-  const storage = getStorage();
-  const coverRef = ref(storage, `covers/${userUid}/cover.png`);
 
   useEffect(() => {
     document.title = !!userName ? userName : "Profile";
 
     if (!cover) {
-      getDownloadURL(coverRef)
-        .then((url) => {
-          setCover(url);
-        })
-        .catch(() => {});
+      const coverLink = userInfo.map((info) => info.cover);
+      setCover(coverLink[0]);
     }
-  }, [cover, coverRef, userName]);
+  }, [userName, cover, userInfo]);
 
   const changeCoverHandler = async () => {
+    if (!photoBuffer) {
+      return;
+    }
+
     try {
       setLoading({
         ...loading,
@@ -54,8 +53,9 @@ export const Profile = () => {
       });
 
       await changeCover(photoBuffer)
-        .then((url) => {
-          setCover(url);
+        .then(async (url) => {
+          const docId = userInfo.map((info) => info.id);
+          await updateDoc(doc(db, "users", docId[0]), { cover: url });
           setSnackBarOpen(true);
         })
         .catch((err) => console.log(err.message));
@@ -71,11 +71,7 @@ export const Profile = () => {
   };
 
   return (
-    <Box
-      sx={{ backgroundColor: "#E4F2FD" }}
-      pt={2}
-      minHeight="calc(100vh - 64px)"
-    >
+    <Box pt={2} minHeight="calc(100vh - 64px)">
       <Container>
         <Box
           p={1}
@@ -117,7 +113,11 @@ export const Profile = () => {
                   variant="contained"
                   disableElevation
                   size="small"
-                  sx={{ position: "absolute", bottom: 8, right: 8 }}
+                  sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                  }}
                   startIcon={<DoneIcon />}
                   loading={loading.cover}
                   loadingPosition="start"

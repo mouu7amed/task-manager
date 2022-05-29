@@ -136,7 +136,7 @@ export const ProfileSettings = ({ avatar, userInfo }) => {
 
       if (phoneValue) {
         const docId = userInfo.map((info) => info.id);
-        await updateDoc(doc(db, "user", docId[0]), {
+        await updateDoc(doc(db, "users", docId[0]), {
           phone: phoneValue,
         })
           .then(() => setSnackBarOpen(true))
@@ -168,7 +168,7 @@ export const ProfileSettings = ({ avatar, userInfo }) => {
       });
 
       const docId = userInfo.map((info) => info.id);
-      await updateDoc(doc(db, "user", docId[0]), {
+      await updateDoc(doc(db, "users", docId[0]), {
         bio: bioValue,
       })
         .then(() => setSnackBarOpen(true))

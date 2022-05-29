@@ -14,14 +14,12 @@ import {
   Slide,
   Stack,
   Toolbar,
-  Typography,
   Badge,
 } from "@mui/material";
 import React, { forwardRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../utilities/AuthProvider";
+import { useAuth } from "../../../utilities/AuthProvider";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import MenuIcon from "@mui/icons-material/Menu";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
@@ -36,24 +34,25 @@ export const Navbar = ({ userName, avatar }) => {
   const navigate = useNavigate();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  const logoutHandler = () => {
+  const logoutHandler = async () => {
     setShowLogoutDialog(false);
-    logout();
-    navigate("/login");
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   return (
     <AppBar position="static" color="primary" elevation={2}>
       <Toolbar>
-        <IconButton size="large" color="inherit">
-          <MenuIcon />
-        </IconButton>
-        <Typography
-          variant="h6"
-          sx={{ display: { md: "block", xs: "none" }, ml: 1 }}
+        <Button
+          color="inherit"
+          sx={{
+            textTransform: "initial",
+            fontSize: { sm: 18, xs: 16 },
+          }}
+          onClick={() => navigate("/dashboard", { replace: true })}
         >
           TaskManager
-        </Typography>
+        </Button>
         <Stack direction="row" spacing={2} ml="auto">
           <IconButton color="inherit">
             <Badge badgeContent={17} color="error">
