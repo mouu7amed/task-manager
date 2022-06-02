@@ -16,6 +16,7 @@ import DoneIcon from "@mui/icons-material/Done";
 import { useAuth } from "../../../utilities/AuthProvider";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../utilities/firebase";
+import { ListUserTasks } from "./ListUserTasks";
 
 const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
   return <Alert ref={ref} elevation={2} {...props} />;
@@ -29,7 +30,7 @@ export const Profile = () => {
     cover: false,
   });
 
-  const { userName, avatar, userInfo } = useOutletContext();
+  const { userName, avatar, userInfo, userTasks } = useOutletContext();
   const { changeCover } = useAuth();
 
   useEffect(() => {
@@ -168,28 +169,30 @@ export const Profile = () => {
               </Stack>
             </Stack>
           </Box>
+        </Box>
 
-          <Snackbar
-            open={snackBarOpen}
-            autoHideDuration={2000}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
+        <ListUserTasks userTasks={userTasks} />
+
+        <Snackbar
+          open={snackBarOpen}
+          autoHideDuration={2000}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+        >
+          <SnackbarAlert
+            severity="info"
+            onClose={(e, reason) => {
+              if (reason === "clickaway") {
+                return;
+              }
+              setSnackBarOpen(false);
             }}
           >
-            <SnackbarAlert
-              severity="info"
-              onClose={(e, reason) => {
-                if (reason === "clickaway") {
-                  return;
-                }
-                setSnackBarOpen(false);
-              }}
-            >
-              Cover Changed successfully!
-            </SnackbarAlert>
-          </Snackbar>
-        </Box>
+            Cover Changed successfully!
+          </SnackbarAlert>
+        </Snackbar>
       </Container>
     </Box>
   );

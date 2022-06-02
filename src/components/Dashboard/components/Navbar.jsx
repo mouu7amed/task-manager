@@ -41,7 +41,7 @@ export const Navbar = ({ userName, avatar }) => {
   };
 
   return (
-    <AppBar position="static" color="primary" elevation={2}>
+    <AppBar position="static" color="primary" elevation={0}>
       <Toolbar>
         <Button
           color="inherit"
