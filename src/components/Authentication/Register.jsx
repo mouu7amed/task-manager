@@ -126,7 +126,8 @@ export const Register = ({ title }) => {
 
             await addDoc(collection(db, "users"), {
               owner: res.user.uid,
-              cover: "",
+              cover:
+                "https://firebasestorage.googleapis.com/v0/b/task-manager-7bf3e.appspot.com/o/covers%2F5AAM3mEDSPV4eAKmYiw4AcsMVWW2%2Fcover.png?alt=media&token=6e899353-8bb2-4062-9822-03469dbab91f",
               bio: "No Bio",
               phone: "No phone number",
             });

@@ -1,32 +1,25 @@
 import { Avatar, Box, Stack, Typography } from "@mui/material";
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { AddTask } from "../Tasks/AddTask";
 import { Aside } from "./Aside";
 import { Navbar } from "./Navbar";
 
-export const Header = ({ userUid, userName, avatar, userInfo }) => {
+export const Header = ({ userName, avatar, userInfo }) => {
   const location = useLocation();
   return (
     <Box>
       <Navbar userName={userName} avatar={avatar} />
       {location.pathname === "/dashboard" && (
-        <Box
-          height={150}
-          bgcolor="primary.main"
-          display="flex"
-          position="relative"
-        >
+        <Box height={150} bgcolor="primary.main" display="flex">
           <Stack
             direction="row"
-            position="absolute"
-            top="25%"
             spacing={1}
             width={"100%"}
-            justifyContent="flex-start"
+            justifyContent="space-between"
             alignItems="flex-start"
             pl={2}
             pr={2}
+            pt={2}
           >
             <Box
               height={"100%"}
@@ -50,7 +43,6 @@ export const Header = ({ userUid, userName, avatar, userInfo }) => {
                 </Typography>
               </Stack>
             </Box>
-            <AddTask userUid={userUid} userName={userName} avatar={avatar} />
             <Aside userInfo={userInfo} avatar={avatar} userName={userName} />
           </Stack>
         </Box>

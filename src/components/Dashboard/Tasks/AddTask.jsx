@@ -1,35 +1,42 @@
-import { Avatar, IconButton, MenuItem, Paper, TextField } from "@mui/material";
+import { Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../../../utilities/firebase";
-import SendIcon from "@mui/icons-material/Send";
-import { Box } from "@mui/system";
+import AddIcon from "@mui/icons-material/Add";
 
-export const AddTask = ({ userUid, avatar, userName }) => {
+export const AddTask = ({ userUid }) => {
+  const [taskTitle, setTaskTitle] = useState("");
   const [taskBody, setTaskBody] = useState("");
-  const [privacy, setPrivacy] = useState("public");
+  const [disabled, setDisabled] = useState(true);
+
+  useEffect(() => {
+    if (taskBody !== "" && taskTitle !== "") {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [taskTitle, taskBody]);
 
   const addTaskHandler = async (e) => {
     e.preventDefault();
 
-    if (taskBody === "") {
+    if (taskBody === "" || taskTitle === "") {
       return;
     }
 
     try {
       await addDoc(collection(db, "tasks"), {
         owner: userUid,
-        creatorName: userName,
-        creatorAvatar: avatar,
-        task: taskBody,
+        taskTitle: taskTitle,
+        taskBody: taskBody,
         createdAt: new Date(),
-        privacy: privacy,
-        liked: false,
+        completed: false,
       });
     } catch (error) {
       console.log(error.message);
     }
 
+    setTaskTitle("");
     setTaskBody("");
   };
 
@@ -49,52 +56,35 @@ export const AddTask = ({ userUid, avatar, userName }) => {
         flexBasis: { lg: "50%", xs: "100%" },
       }}
     >
-      <Box
-        width={"100%"}
-        display="flex"
-        justifyContent="flex-start"
-        alignItems="center"
-      >
-        <Avatar src={avatar} alt="" />
+      <Stack width={"100%"}>
+        <Typography fontWeight={500} fontSize={18}>
+          Add a Task
+        </Typography>
         <TextField
-          placeholder="What's on your mind?"
+          placeholder="Task Title"
+          type={"text"}
+          fullWidth
+          value={taskTitle}
+          onChange={(e) => setTaskTitle(e.target.value)}
+          sx={{ fieldset: { border: "none" } }}
+        />
+        <TextField
+          placeholder="Task Description"
           type={"text"}
           fullWidth
           value={taskBody}
           onChange={(e) => setTaskBody(e.target.value)}
           sx={{ fieldset: { border: "none" } }}
         />
-      </Box>
-      <Box
-        width={"100%"}
-        display="flex"
-        justifyContent="flex-end"
-        alignItems="center"
-      >
-        <TextField
-          placeholder="Privacy"
-          select
-          value={privacy}
-          onChange={(e) => {
-            setPrivacy(e.target.value);
-          }}
-          sx={{ fieldset: { border: "none" }, width: "150px", mr: 1 }}
-        >
-          <MenuItem value="public">Public</MenuItem>
-          <MenuItem value="onlyme">Only Me</MenuItem>
-        </TextField>
-        <IconButton
+        <Button
           variant="contained"
           type="submit"
-          sx={{
-            color: "white",
-            backgroundColor: "primary.main",
-            "&:hover": { backgroundColor: "primary.light" },
-          }}
+          endIcon={<AddIcon />}
+          disabled={disabled}
         >
-          <SendIcon />
-        </IconButton>
-      </Box>
+          Add Task
+        </Button>
+      </Stack>
     </Paper>
   );
 };

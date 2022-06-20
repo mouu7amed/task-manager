@@ -50,7 +50,13 @@ export const Aside = ({ userInfo, avatar, userName }) => {
           <Typography variant="body2" color="text.secondary">
             10 Connection
           </Typography>
-          <Button variant="outlined" color="success" sx={{ mt: 1 }}>
+          <Button
+            variant="outlined"
+            color="success"
+            sx={{ mt: 1 }}
+            component="a"
+            href="/dashboard/profile"
+          >
             My Profile
           </Button>
         </Box>

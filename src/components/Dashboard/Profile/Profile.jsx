@@ -16,7 +16,8 @@ import DoneIcon from "@mui/icons-material/Done";
 import { useAuth } from "../../../utilities/AuthProvider";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../../utilities/firebase";
-import { ListUserTasks } from "./ListUserTasks";
+import { AddTask } from "../Tasks/AddTask";
+import { ListTasks } from "../Tasks/ListTasks";
 
 const SnackbarAlert = forwardRef(function SnackbarAlert(props, ref) {
   return <Alert ref={ref} elevation={2} {...props} />;
@@ -30,7 +31,7 @@ export const Profile = () => {
     cover: false,
   });
 
-  const { userName, avatar, userInfo, userTasks } = useOutletContext();
+  const { userUid, userName, avatar, userInfo, tasks } = useOutletContext();
   const { changeCover } = useAuth();
 
   useEffect(() => {
@@ -171,7 +172,13 @@ export const Profile = () => {
           </Box>
         </Box>
 
-        <ListUserTasks userTasks={userTasks} />
+        <Stack>
+          <Box p={3} display="flex" justifyContent="center" alignItems="center">
+            <AddTask userUid={userUid} />
+          </Box>
+
+          <ListTasks tasks={tasks} />
+        </Stack>
 
         <Snackbar
           open={snackBarOpen}

@@ -22,7 +22,14 @@ function App() {
           path="/forgot-password"
           element={<ForgotPassword title="Forgot Password" />}
         />
-        <Route path="/dashboard" element={<Dashboard title="Dashboard" />}>
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard title="Dashboard" />
+            </RequireAuth>
+          }
+        >
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
         </Route>

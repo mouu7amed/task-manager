@@ -5,7 +5,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../utilities/AuthProvider";
 import { db } from "../../utilities/firebase";
 import { Header } from "./components/Header";
-import { ListTasks } from "./Tasks/ListTasks";
 
 export const Dashboard = ({ title }) => {
   const [userUid, setUserUid] = useState("");
@@ -14,7 +13,6 @@ export const Dashboard = ({ title }) => {
   const [avatar, setAvatar] = useState("");
   const [userInfo, setUserInfo] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [userTasks, setUserTasks] = useState([]);
 
   const { currentUser } = useAuth();
   const location = useLocation();
@@ -52,20 +50,9 @@ export const Dashboard = ({ title }) => {
     };
 
     const getAllTasks = async () => {
-      onSnapshot(collection(db, "tasks"), (snapshot) => {
-        setTasks(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-      });
-    };
-
-    const getUserTasks = async () => {
       const q = query(collection(db, "tasks"), where("owner", "==", userUid));
       onSnapshot(q, (snapshot) => {
-        setUserTasks(
+        setTasks(
           snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
@@ -76,21 +63,18 @@ export const Dashboard = ({ title }) => {
 
     getUserInfo();
     getAllTasks();
-    getUserTasks();
   }, [userUid]);
 
   return (
     <>
-      <Header
-        userUid={userUid}
-        userName={userName}
-        avatar={avatar}
-        userInfo={userInfo}
-      />
-      <Box sx={{ backgroundColor: "#E4F2FD" }}>
+      <Header userName={userName} avatar={avatar} userInfo={userInfo} />
+      <Box
+        sx={{ backgroundColor: "#E4F2FD", minHeight: "calc(100vh - 214px)" }}
+      >
         {location.pathname === "/dashboard" ? (
           <Box display="flex" pt={1} pb={1}>
-            <ListTasks tasks={tasks} avatar={avatar} userInfo={userInfo} />
+            {/* TODO add dashboard charts here  */}
+            Dashboard Charts Will be added here in the future ...
           </Box>
         ) : (
           <Outlet
@@ -100,7 +84,7 @@ export const Dashboard = ({ title }) => {
               userEmail,
               avatar,
               userInfo,
-              userTasks,
+              tasks,
             }}
           />
         )}
